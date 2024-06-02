@@ -10,7 +10,10 @@ export function Progress({ progress }: Props) {
       aria-valuenow={progress}
       className="h-2 rounded-sm bg-gray/30"
     >
-      <div className="h-2 rounded-sm bg-green" style={{ width: progress }} />
+      <div
+        className="h-2 rounded-sm bg-green"
+        style={{ width: `${progress}%` }}
+      />
     </div>
   );
 }

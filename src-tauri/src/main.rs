@@ -1,18 +1,18 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
-use tauri::{
-    App, CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu,
-    SystemTrayMenuItemHandle,
-};
+use serde::Deserialize;
+use tauri::{CustomMenuItem, Manager, SystemTray, SystemTrayEvent, SystemTrayMenu};
 use tauri_plugin_positioner::{Position, WindowExt};
+use window_vibrancy::apply_acrylic;
 
+#[derive(Deserialize)]
 struct ProgressPayload {
     progress: i32,
 }
 
 fn main() {
-    let quit = CustomMenuItem::new("quit".to_string(), "Quit").accelerator("Ctrl+Q");
-    let hide = CustomMenuItem::new("hide".to_string(), "Hide").accelerator("Ctrl+shift+Q");
+    let quit = CustomMenuItem::new("quit".to_string(), "Quit").accelerator("Cmd+Q");
+    let hide = CustomMenuItem::new("hide".to_string(), "Hide").accelerator("Cmd+Shift+Q");
 
     let system_tray_menu = SystemTrayMenu::new().add_item(quit).add_item(hide);
 
@@ -29,25 +29,48 @@ fn main() {
                 std::process::exit(0);
             });
 
-            // app.listen_global("progress", |event| {
-            //     if let Some(payload) = event.payload() {
-            //         let data: Result<ProgressPayload, _> = serde_json::from_str(payload);
+            app.listen_global("progress", move |event| {
+                if let Some(payload) = event.payload() {
+                    let data: Result<ProgressPayload, _> = serde_json::from_str(payload);
 
-            //         match data {
-            //             Ok(data) => match data.progress {
-            //                 10 => handle
-            //                     .tray_handle()
-            //                     .set_icon(tauri::icon::Raw(include_bytes!("../icons/32x32.png"))),
-            //                 _ => println!("it is something else"),
-            //             },
-            //             Err(e) => {
-            //                 println!("Failed to deserialize payload: {}", e);
-            //             }
-            //         }
-            //     }
-            // });
+                    match data {
+                        Ok(data) => match data.progress {
+                            10 => {
+                                handle
+                                    .tray_handle()
+                                    .set_icon(tauri::Icon::Raw(
+                                        include_bytes!("../icons/icon.png").to_vec(),
+                                    ))
+                                    .unwrap();
+                            }
+                            15 => {
+                                handle
+                                    .tray_handle()
+                                    .set_icon(tauri::Icon::Raw(
+                                        include_bytes!("../icons/test.png").to_vec(),
+                                    ))
+                                    .unwrap();
+                            }
+                            100 => {
+                                handle
+                                    .tray_handle()
+                                    .set_icon(tauri::Icon::Raw(
+                                        include_bytes!("../icons/icon.png").to_vec(),
+                                    ))
+                                    .unwrap();
+                            }
+                            _ => println!("it is something else"),
+                        },
+                        Err(e) => {
+                            println!("Failed to deserialize payload: {}", e);
+                        }
+                    }
+                }
+            });
 
             let window = app.get_window("main").unwrap();
+
+            let _ = apply_acrylic(&window, Some((0, 0, 0, 10)));
 
             Ok(())
         })
