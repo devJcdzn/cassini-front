@@ -39,15 +39,44 @@ fn main() {
                                 handle
                                     .tray_handle()
                                     .set_icon(tauri::Icon::Raw(
-                                        include_bytes!("../icons/icon.png").to_vec(),
+                                        include_bytes!("../icons/teseu-icon-uploading-10.png")
+                                            .to_vec(),
                                     ))
                                     .unwrap();
                             }
-                            15 => {
+                            25 => {
                                 handle
                                     .tray_handle()
                                     .set_icon(tauri::Icon::Raw(
-                                        include_bytes!("../icons/test.png").to_vec(),
+                                        include_bytes!("../icons/teseu-icon-uploading-40.png")
+                                            .to_vec(),
+                                    ))
+                                    .unwrap();
+                            }
+                            50 => {
+                                handle
+                                    .tray_handle()
+                                    .set_icon(tauri::Icon::Raw(
+                                        include_bytes!("../icons/teseu-icon-uploading-50.png")
+                                            .to_vec(),
+                                    ))
+                                    .unwrap();
+                            }
+                            65 => {
+                                handle
+                                    .tray_handle()
+                                    .set_icon(tauri::Icon::Raw(
+                                        include_bytes!("../icons/teseu-icon-uploading-70.png")
+                                            .to_vec(),
+                                    ))
+                                    .unwrap();
+                            }
+                            80 => {
+                                handle
+                                    .tray_handle()
+                                    .set_icon(tauri::Icon::Raw(
+                                        include_bytes!("../icons/teseu-icon-uploading-90.png")
+                                            .to_vec(),
                                     ))
                                     .unwrap();
                             }
@@ -55,7 +84,7 @@ fn main() {
                                 handle
                                     .tray_handle()
                                     .set_icon(tauri::Icon::Raw(
-                                        include_bytes!("../icons/icon.png").to_vec(),
+                                        include_bytes!("../icons/teseu-icon.png").to_vec(),
                                     ))
                                     .unwrap();
                             }
@@ -103,7 +132,7 @@ fn main() {
                         "hide" => {
                             let window = app.get_window("main").unwrap();
 
-                            #[cfg(target_os = "macOs")]
+                            #[cfg(target_os = "macos")]
                             let _ = window.move_window(Position::TrayCenter).unwrap();
 
                             #[cfg(target_os = "windows")]

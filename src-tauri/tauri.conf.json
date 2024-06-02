@@ -12,7 +12,7 @@
   },
   "tauri": {
     "systemTray": {
-      "iconPath": "icons/icon.png",
+      "iconPath": "icons/teseu-icon.png",
       "iconAsTemplate": true
     },
     "allowlist": {
