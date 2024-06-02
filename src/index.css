@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@font-face {
+  font-family: "san-francisco";
+  src: url("./assets/fonts/san-fransico-UI.otf") format("otf");
+}
+@tailwind utilities;
+
+* {
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: default;
+}
