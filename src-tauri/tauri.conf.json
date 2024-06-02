@@ -11,6 +11,10 @@
     "version": "0.1.0"
   },
   "tauri": {
+    "systemTray": {
+      "iconPath": "icons/icon.png",
+      "iconAsTemplate": true
+    },
     "allowlist": {
       "all": false
     },
@@ -64,10 +68,11 @@
         "titleBarStyle": "Overlay",
         "alwaysOnTop": true,
         "closable": false,
-        "minimizable": true,
+        "minimizable": false,
         "decorations": false,
         "focus": false,
         "transparent": true,
+        "visible": false,
         "fileDropEnabled": false
       }
     ]

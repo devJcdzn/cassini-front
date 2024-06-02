@@ -15,7 +15,8 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-dropzone": "^14.2.3",
-    "react-hotkeys-hook": "^4.5.0"
+    "react-hotkeys-hook": "^4.5.0",
+    "tauri-plugin-positioner-api": "^0.2.7"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^1.5.14",
