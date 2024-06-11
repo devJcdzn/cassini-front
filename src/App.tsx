@@ -1,5 +1,12 @@
 import React from "react";
+
 import { emit } from "@tauri-apps/api/event";
+import {
+  isPermissionGranted,
+  requestPermission,
+  sendNotification,
+} from "@tauri-apps/api/notification";
+import { writeText as WriteToClipboard } from "@tauri-apps/api/clipboard";
 
 import {
   ArrowUpToLine,
@@ -11,13 +18,17 @@ import {
 } from "lucide-react";
 
 import { useDropzone } from "react-dropzone";
-import { verifyMimeTypes } from "./lib/utils";
-import { mimeTypesAllowed } from "./lib/secure-mime-types";
+import {
+  getNextCloserTen,
+  isFileAllowed,
+  isFileSizeAllowed,
+} from "./lib/utils";
 
 import { Menu } from "./components/menu";
 import { Progress } from "./components/progress";
 import { Separator } from "./components/separator";
 import { UploadArea } from "./components/upload-area";
+import { api } from "./lib/api";
 
 function App() {
   const [uploadQueue, setUploadQueue] = React.useState<File[]>([]);
@@ -26,10 +37,25 @@ function App() {
 
   const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
     onDrop: handleUpload,
-    multiple: true,
+    multiple: false,
     noClick: true,
     noKeyboard: true,
   });
+
+  React.useEffect(() => {
+    const HasPermission = localStorage.getItem("notifications-permission");
+
+    if (!HasPermission) {
+      isPermissionGranted().then((permissionGranted) => {
+        if (!permissionGranted) {
+          requestPermission().then((permission) => {
+            permissionGranted = permission === "granted";
+            localStorage.setItem("notifications-permission", "granted");
+          });
+        }
+      });
+    }
+  }, []);
 
   function emitUploadProgress(progress: number) {
     emit("progress", {
@@ -37,50 +63,56 @@ function App() {
     });
   }
 
-  function handleUpload(files: File[]) {
+  async function handleUpload(files: File[]) {
+    setProgress(0);
     setUploadQueue(files);
 
-    const { error, message } = verifyMimeTypes(files, mimeTypesAllowed);
+    const [file] = files;
 
-    if (error && error !== null) {
-      console.log({
-        error,
-        message,
-      });
-      setErr(message as string);
-      return;
+    const filesIsAllowed =
+      isFileAllowed(file.type) && isFileSizeAllowed(file.size);
+
+    if (!filesIsAllowed) {
+      setErr("Files is not allowed. MIME Type not secure or size up to 1Gb.");
     }
 
-    setTimeout(() => {
-      emitUploadProgress(10);
-      setProgress(10);
-    }, 500 * 1);
-    setTimeout(() => {
-      emitUploadProgress(15);
-      setProgress(15);
-    }, 500 * 2);
-    setTimeout(() => {
-      emitUploadProgress(25);
-      setProgress(25);
-    }, 500 * 3);
-    setTimeout(() => {
-      emitUploadProgress(50);
-      setProgress(50);
-    }, 500 * 4);
-    setTimeout(() => {
-      emitUploadProgress(65);
-      setProgress(65);
-    }, 500 * 5);
-    setTimeout(() => {
-      emitUploadProgress(80);
-      setProgress(80);
-    }, 500 * 6);
-    setTimeout(() => {
-      emitUploadProgress(100);
-      setProgress(100);
-    }, 500 * 7);
+    const createUploadURLResponse = await api.post<{
+      id: string;
+      signedUrl: string;
+    }>("/uploads", {
+      name: file.name,
+      contentType: file.type,
+      size: file.size,
+    });
 
-    console.log(files);
+    const { id, signedUrl } = createUploadURLResponse.data;
+
+    await api.put(signedUrl, file, {
+      onUploadProgress({ progress }) {
+        if (progress) {
+          const progressPercent = Math.round(progress * 100);
+          const closerTen = getNextCloserTen(progressPercent);
+
+          emitUploadProgress(closerTen);
+          setProgress(progressPercent);
+        }
+      },
+    });
+
+    const downloadURL = `http://localhost:3333/uploads/${id}`;
+
+    await WriteToClipboard(downloadURL);
+
+    const permissionGranted = await isPermissionGranted();
+
+    if (permissionGranted) {
+      sendNotification({
+        title: "Upload Succeeded!",
+        body: "Share Url was copied to your clipboard.",
+      });
+    }
+
+    setUploadQueue([]);
   }
 
   function handleCancelUpload() {
